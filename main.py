@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from prettytable import PrettyTable
 
 # --- Settings ---
-STATISTIC_TIME = 30 # Days till today
+START_DATE = '2024-01-03' # Start date (YYYY-MM-DD)
 OWNER = 'OWNER' # Repo owner
 REPO = 'REPO' # Repo name
-ACCESS_TOKEN = 'YOUR_GITHUB_TOKEN' # Access token
+ACCESS_TOKEN = 'YOUR_TOKEN' # GitHub access token
 # ---------------
 
 def get_github_token():
@@ -15,10 +15,6 @@ def get_github_token():
 def get_pull_requests_statistics(owner, repo):
     base_url = f'https://api.github.com/repos/{owner}/{repo}/pulls'
     headers = {'Authorization': f'token {get_github_token()}'}
-
-    # Calculate the start date
-    today = datetime.utcnow()
-    start_date = today - timedelta(days=STATISTIC_TIME)
 
     params = {
         'state': 'all',
@@ -41,7 +37,7 @@ def get_pull_requests_statistics(owner, repo):
         created_at = datetime.strptime(pr['created_at'], '%Y-%m-%dT%H:%M:%SZ')
 
         # Check if the pull request is created after the start date
-        if created_at >= start_date:
+        if created_at >= datetime.strptime(START_DATE, '%Y-%m-%d'):
 
             user_statistics[pr_owner]['created'] += 1
             user_statistics[pr_owner]['open'] += 1 if pr['state'] == 'open' else 0
@@ -122,4 +118,4 @@ if __name__ == '__main__':
         statistic_table.add_row([
             user, stats['created'], stats['open'], stats['required_reviews'], stats['reviewed'], stats['ignored'], stats['average_review_time'], stats['average_duration']
         ])
-    print(statistic_table)
+    print(statistic_table.get_string(sortby="Required Reviews", reversesort=True))
